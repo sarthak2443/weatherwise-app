@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="WeatherWise - Advanced weather app with real-time forecasts, air quality monitoring, and interactive weather maps">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="WeatherWise">
+    
+    <title>WeatherWise - Enhanced Weather App</title>
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://api.openweathermap.org">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌦️</text></svg>">
+</head>
+
+<body>
+    <div class="container">
+        <h1><i class="fas fa-cloud-sun"></i> WeatherWise</h1>
+        
+        <!-- Enhanced Input Section -->
+        <div class="search-section">
+            <div class="input-group">
+                <input type="text" id="cityInput" placeholder="Enter city name..." onkeyup="handleKeyPress(event)">
+                <button onclick="getWeather()"><i class="fas fa-search"></i> Get Weather</button>
+                <button onclick="getCurrentLocation()" title="Get weather for your current location">
+                    <i class="fas fa-location-arrow"></i> My Location
+                </button>
+            </div>
+            
+            <!-- Recent Searches -->
+            <div class="recent-searches" id="recentSearches" style="display: none;">
+                <h4><i class="fas fa-history"></i> Recent Searches</h4>
+                <div id="recentCities"></div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <button id="themeToggleBtn" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i> Dark Theme
+            </button>
+            <button id="unitToggleBtn" onclick="toggleUnits()">
+                <i class="fas fa-thermometer-half"></i> °F
+            </button>
+            <button onclick="toggleMap()">
+                <i class="fas fa-map"></i> Weather Map
+            </button>
+            <button onclick="showComparison()">
+                <i class="fas fa-balance-scale"></i> Compare Cities
+            </button>
+        </div>
+
+        <!-- Weather Map Section -->
+        <div id="weatherMap" class="weather-map" style="display: none;">
+            <h3><i class="fas fa-satellite"></i> Weather Map</h3>
+            <div class="map-controls">
+                <button onclick="changeMapLayer('temp')" class="map-btn active" data-layer="temp">Temperature</button>
+                <button onclick="changeMapLayer('precipitation')" class="map-btn" data-layer="precipitation">Precipitation</button>
+                <button onclick="changeMapLayer('clouds')" class="map-btn" data-layer="clouds">Clouds</button>
+                <button onclick="changeMapLayer('wind')" class="map-btn" data-layer="wind">Wind</button>
+            </div>
+            <div id="mapContainer"></div>
+        </div>
+
+        <!-- City Comparison Section -->
+        <div id="cityComparison" class="city-comparison" style="display: none;">
+            <h3><i class="fas fa-balance-scale"></i> Compare Cities</h3>
+            <div class="comparison-inputs">
+                <input type="text" id="city1Input" placeholder="First city...">
+                <input type="text" id="city2Input" placeholder="Second city...">
+                <button onclick="compareCities()"><i class="fas fa-chart-bar"></i> Compare</button>
+            </div>
+            <div id="comparisonResult"></div>
+        </div>
+
+        <div id="loading" class="loading-indicator">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+        </div>
+
+        <!-- Main Weather Display -->
+        <div id="weatherResult" class="weather-result"></div>
+        
+        <!-- Air Quality Section -->
+        <div id="airQuality" class="air-quality"></div>
+        
+        <!-- Weather Alerts Section -->
+        <div id="weatherAlerts" class="weather-alerts"></div>
+        
+        <!-- Extended Forecast -->
+        <div id="forecastResult" class="forecast-result"></div>
+        
+        <!-- Hourly Forecast -->
+        <div id="hourlyForecast" class="hourly-forecast"></div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
