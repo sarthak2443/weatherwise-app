@@ -141,12 +141,13 @@ function searchCity(cityName) {
  * Set random weather-themed background
  */
 function setRandomWeatherBackground() {
+  // Use consistent design system colors instead of random colors
   const backgrounds = [
-    'linear-gradient(135deg, #74b9ff, #0984e3)',
-    'linear-gradient(135deg, #fd79a8, #e84393)',
-    'linear-gradient(135deg, #fdcb6e, #e17055)',
-    'linear-gradient(135deg, #6c5ce7, #a29bfe)',
-    'linear-gradient(135deg, #00b894, #00cec9)'
+    'linear-gradient(135deg, #4f46e5, #06b6d4)',
+    'linear-gradient(135deg, #8b5cf6, #06b6d4)',
+    'linear-gradient(135deg, #10b981, #06b6d4)',
+    'linear-gradient(135deg, #f59e0b, #f97316)',
+    'linear-gradient(135deg, #6366f1, #8b5cf6)'
   ];
   const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
   document.body.style.background = randomBg;
@@ -159,7 +160,9 @@ function loadThemePreference() {
   const isDarkTheme = localStorage.getItem('darkTheme') === 'true';
   if (isDarkTheme) {
     document.body.classList.add('dark-theme');
+    document.documentElement.classList.add('dark');
     themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> Light Theme';
+    document.body.style.background = 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)';
   }
 }
 
@@ -330,17 +333,17 @@ function setWeatherBackground(weatherMain) {
   }
   
   const weatherBackgrounds = {
-    'Clear': 'linear-gradient(135deg, #87CEEB, #FFD700)',
-    'Clouds': 'linear-gradient(135deg, #C0C0C0, #808080)',
-    'Rain': 'linear-gradient(135deg, #4682B4, #2F4F4F)',
-    'Drizzle': 'linear-gradient(135deg, #B0C4DE, #778899)',
-    'Thunderstorm': 'linear-gradient(135deg, #2F2F2F, #4B0082)',
-    'Snow': 'linear-gradient(135deg, #F0F8FF, #E6E6FA)',
-    'Mist': 'linear-gradient(135deg, #D3D3D3, #A9A9A9)',
-    'Fog': 'linear-gradient(135deg, #D3D3D3, #A9A9A9)'
+    'Clear': 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+    'Clouds': 'linear-gradient(135deg, #9ca3af, #6b7280)',
+    'Rain': 'linear-gradient(135deg, #3b82f6, #1e40af)',
+    'Drizzle': 'linear-gradient(135deg, #6b7280, #4b5563)',
+    'Thunderstorm': 'linear-gradient(135deg, #374151, #1f2937)',
+    'Snow': 'linear-gradient(135deg, #e5e7eb, #d1d5db)',
+    'Mist': 'linear-gradient(135deg, #d1d5db, #9ca3af)',
+    'Fog': 'linear-gradient(135deg, #d1d5db, #9ca3af)'
   };
   
-  const background = weatherBackgrounds[weatherMain] || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+  const background = weatherBackgrounds[weatherMain] || 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)';
   document.body.style.background = background;
 }
 
@@ -614,16 +617,17 @@ async function compareCities() {
  */
 function toggleTheme() {
   document.body.classList.toggle('dark-theme');
+  document.documentElement.classList.toggle('dark');
   const isDarkTheme = document.body.classList.contains('dark-theme');
   
   if (isDarkTheme) {
     themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> Light Theme';
     // Set consistent dark background
-    document.body.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+    document.body.style.background = 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)';
   } else {
     themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i> Dark Theme';
-    // Set default light background
-    document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    // Set default light background using CSS variables
+    document.body.style.background = 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)';
   }
   
   // Save theme preference
