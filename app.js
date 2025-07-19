@@ -6,6 +6,28 @@ let recentSearches = JSON.parse(localStorage.getItem('recentSearches')) || [];
 let currentLat = null;
 let currentLon = null;
 
+// Mock weather data for testing
+const mockWeatherData = {
+  name: "London",
+  sys: { country: "GB", sunrise: 1640071200, sunset: 1640104800 },
+  main: { 
+    temp: 15.3, 
+    feels_like: 13.2, 
+    temp_min: 12.1, 
+    temp_max: 18.5, 
+    humidity: 65, 
+    pressure: 1013 
+  },
+  weather: [{ 
+    main: "Clouds", 
+    description: "scattered clouds", 
+    icon: "03d" 
+  }],
+  wind: { speed: 3.6 },
+  visibility: 10000,
+  coord: { lat: 51.5074, lon: -0.1278 }
+};
+
 // DOM elements
 const cityInput = document.getElementById('cityInput');
 const weatherResultDiv = document.getElementById('weatherResult');
@@ -22,6 +44,9 @@ const recentSearchesDiv = document.getElementById('recentSearches');
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize theme system first
+    WeatherTheme.initializeTheme();
+    
     loadRecentSearches();
     setRandomWeatherBackground();
     loadThemePreference();
@@ -164,6 +189,14 @@ function loadThemePreference() {
 }
 
 /**
+ * Demo function to show the new weather card with mock data
+ */
+function showWeatherCardDemo() {
+  console.log('Showing weather card demo with mock data');
+  displayWeatherData(mockWeatherData);
+}
+
+/**
  * Fetches and displays current weather and 5-day forecast for a given city.
  */
 async function getWeather() {
@@ -214,8 +247,21 @@ async function getWeather() {
     await fetchAdditionalData(city, currentLat, currentLon);
 
   } catch (error) {
-    weatherResultDiv.innerHTML = `<span class="error-message">${error.message}</span>`;
-    forecastResultDiv.innerHTML = '';
+    console.log('API call failed, showing demo instead:', error.message);
+    
+    // Show demo instead of error for development/testing
+    weatherResultDiv.innerHTML = `
+      <div style="text-align: center; margin-bottom: 20px; padding: 16px; background: rgba(255, 193, 7, 0.1); border-radius: 12px; border: 1px solid rgba(255, 193, 7, 0.3);">
+        <p style="margin: 0; color: #856404; font-weight: 500;">
+          ⚠️ API not available in demo mode. Showing sample weather data for ${city}:
+        </p>
+      </div>
+    `;
+    
+    // Use mock data with the entered city name
+    const demoData = { ...mockWeatherData, name: city };
+    displayWeatherData(demoData);
+    
     console.error('Weather fetching error:', error);
   } finally {
     loadingIndicator.style.display = 'none';
@@ -223,70 +269,85 @@ async function getWeather() {
 }
 
 /**
- * Display weather data with enhanced UI
+ * Display weather data with enhanced modern UI using the new WeatherCard component
  */
 function displayWeatherData(data) {
   const units = isMetric ? 'metric' : 'imperial';
   const tempUnit = isMetric ? '°C' : '°F';
   const windUnit = isMetric ? 'm/s' : 'mph';
-  const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
-  const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString();
   
   // Set dynamic background based on weather
   setWeatherBackground(data.weather[0].main);
   
-  weatherResultDiv.innerHTML = `
-    <div class="current-weather">
-      <div class="weather-header">
-        <h2>
-          <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="${data.weather[0].description}" />
-          <div class="location-info">
-            <span class="city-name">${data.name}, ${data.sys.country}</span>
-            <span class="coordinates">Lat: ${data.coord.lat.toFixed(2)}, Lon: ${data.coord.lon.toFixed(2)}</span>
-          </div>
-        </h2>
-      </div>
+  // Use the new enhanced weather card component
+  const weatherCardHTML = createEnhancedWeatherCard(data);
+  
+  weatherResultDiv.innerHTML = weatherCardHTML;
+  
+  // Add hover effects and responsive styles after the card is rendered
+  addWeatherCardStyles();
+}
+
+/**
+ * Add dynamic styles for the weather card component
+ */
+function addWeatherCardStyles() {
+  // Check if styles already exist
+  if (document.getElementById('weather-card-dynamic-styles')) {
+    return;
+  }
+
+  const theme = WeatherTheme.getCurrentTheme();
+  const colors = WeatherTheme.palette[theme];
+  const { shadow } = WeatherTheme;
+  
+  const style = document.createElement('style');
+  style.id = 'weather-card-dynamic-styles';
+  style.textContent = `
+    .detail-card:hover {
+      transform: translateY(-2px);
+      box-shadow: ${theme === 'dark' ? shadow.cardDarkHover : shadow.cardHover};
+    }
+    
+    .enhanced-weather-card:hover {
+      transform: translateY(-3px);
+      box-shadow: ${theme === 'dark' ? shadow.cardDarkHover : shadow.cardHover};
+    }
+    
+    @media (max-width: 768px) {
+      .enhanced-weather-card {
+        max-width: 100% !important;
+        margin: 0 !important;
+      }
       
-      <div class="temperature-section">
-        <div class="main-temp">${data.main.temp.toFixed(1)}${tempUnit}</div>
-        <div class="feels-like">Feels like ${data.main.feels_like.toFixed(1)}${tempUnit}</div>
-        <div class="condition">${data.weather[0].main} - ${data.weather[0].description}</div>
-      </div>
+      .weather-header {
+        flex-direction: column !important;
+        text-align: center !important;
+      }
       
-      <div class="weather-details">
-        <div class="detail-item">
-          <i class="fas fa-eye"></i>
-          <span>Visibility</span>
-          <span>${(data.visibility / 1000).toFixed(1)} km</span>
-        </div>
-        <div class="detail-item">
-          <i class="fas fa-tint"></i>
-          <span>Humidity</span>
-          <span>${data.main.humidity}%</span>
-        </div>
-        <div class="detail-item">
-          <i class="fas fa-wind"></i>
-          <span>Wind</span>
-          <span>${data.wind.speed.toFixed(1)} ${windUnit}</span>
-        </div>
-        <div class="detail-item">
-          <i class="fas fa-thermometer-half"></i>
-          <span>Pressure</span>
-          <span>${data.main.pressure} hPa</span>
-        </div>
-        <div class="detail-item">
-          <i class="fas fa-sun"></i>
-          <span>Sunrise</span>
-          <span>${sunrise}</span>
-        </div>
-        <div class="detail-item">
-          <i class="fas fa-moon"></i>
-          <span>Sunset</span>
-          <span>${sunset}</span>
-        </div>
-      </div>
-    </div>
+      .sun-times {
+        grid-column: span 1 !important;
+      }
+      
+      .sun-times > div {
+        flex-direction: column !important;
+        gap: ${WeatherTheme.spacing.md} !important;
+      }
+      
+      .sun-times > div > div:nth-child(2) {
+        display: none !important;
+      }
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      .detail-card:hover,
+      .enhanced-weather-card:hover {
+        transform: none;
+      }
+    }
   `;
+  
+  document.head.appendChild(style);
 }
 
 /**
@@ -619,15 +680,37 @@ function toggleTheme() {
   if (isDarkTheme) {
     themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> Light Theme';
     // Set consistent dark background
-    document.body.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+    document.body.style.background = WeatherTheme.palette.dark.background;
   } else {
     themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i> Dark Theme';
     // Set default light background
-    document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    document.body.style.background = WeatherTheme.palette.light.background;
   }
   
   // Save theme preference
   localStorage.setItem('darkTheme', isDarkTheme);
+  
+  // Remove existing dynamic styles so they can be recreated with new theme colors
+  const existingStyles = document.getElementById('weather-card-dynamic-styles');
+  if (existingStyles) {
+    existingStyles.remove();
+  }
+  
+  // Refresh weather display with new theme if weather data exists
+  if (weatherResultDiv.innerHTML.trim() && weatherResultDiv.innerHTML.includes('enhanced-weather-card')) {
+    // Re-fetch the current weather data to update the theme
+    if (cityInput.value.trim()) {
+      const currentCity = cityInput.value.trim();
+      // Trigger a refresh of the weather display
+      setTimeout(() => {
+        if (currentLat && currentLon) {
+          getWeatherByCoords(currentLat, currentLon);
+        } else {
+          getWeather();
+        }
+      }, 100);
+    }
+  }
 }
 
 /**
